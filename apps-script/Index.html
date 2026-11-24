@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Health Checkup Book</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<base target="_top">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: clinical, calm, like a doctor's lab report you can actually read
+   IDEA: the yearly lab report sheet, turned into one line per test across the years
+   PICTURE: large trend chart of the test that needs attention, normal range drawn as a green band
+   COLOUR and TYPE: white + deep teal ink, teal accent; status green/amber/red only for results; IBM Plex Sans Thai
+   LAYOUT: finding + flagged chips, big chart, then year compare, category tabs, card grid / table */
+:root{color-scheme:light dark;
+--bg:light-dark(#ffffff,#0d1a1e);--ink:light-dark(#0f2a30,#e4eff1);--mut:light-dark(#587077,#97adb3);
+--line:light-dark(#dfe8ea,#223840);--card:light-dark(#f4f8f9,#132428);--hero:light-dark(#e6f2f1,#10292b);
+--acc:light-dark(#0b7a75,#4cc6bd);--acc2:light-dark(#3a64c8,#8aa8ff);--band:light-dark(#dcf1e5,#173a2b);
+--ok:light-dark(#1d8656,#55c98f);--hi:light-dark(#c8283f,#ff7086);--lo:light-dark(#b86e00,#f2a840)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "IBM Plex Sans Thai",system-ui,sans-serif;overflow-x:clip;font-variant-numeric:tabular-nums}
+.band{padding:clamp(20px,3.4vw,44px) max(4vw,16px)}
+.wrap{max-width:1240px;margin:0 auto}
+.top{background:var(--hero)}
+h1{font-size:clamp(28px,4vw,42px);line-height:1.1;margin:0 0 6px;text-wrap:balance;font-weight:700}
+h2{font-size:22px;margin:0;line-height:1.25}
+.sub{color:var(--mut);margin:0 0 14px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.fl{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:8px 14px;font:inherit;font-size:15px;cursor:pointer;min-height:44px;display:flex;align-items:center;gap:8px}
+.fl b{font-weight:600}
+.chip{display:inline-block;font-size:13px;font-weight:600;border-radius:6px;padding:1px 8px;white-space:nowrap}
+.c-ok{color:var(--ok);background:color-mix(in srgb,var(--ok) 13%,transparent)}
+.c-hi,.c-flag{color:var(--hi);background:color-mix(in srgb,var(--hi) 13%,transparent)}
+.c-lo{color:var(--lo);background:color-mix(in srgb,var(--lo) 15%,transparent)}
+.c-na{color:var(--mut);background:color-mix(in srgb,var(--mut) 12%,transparent)}
+.det{background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:18px;margin-top:18px;--surf:var(--bg)}
+.dh{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:baseline;justify-content:space-between}
+.meta{color:var(--mut);font-size:14px}
+.fig{position:relative;min-height:300px;margin-top:8px}.fig>svg{position:absolute;inset:0;width:100%;height:100%;touch-action:pan-y}
+.tip{position:absolute;top:0;pointer-events:none;background:var(--ink);color:var(--bg);padding:6px 10px;border-radius:8px;font-size:14px;transform:translateX(-50%);white-space:nowrap;display:none;z-index:2}
+.leg{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--mut);margin-top:6px}
+.leg i{display:inline-block;width:14px;height:10px;border-radius:3px;margin-right:6px;vertical-align:middle}
+svg .bd{fill:var(--band)}svg .gl{stroke:var(--line);stroke-width:1}
+svg .ax{fill:var(--mut);font-size:12px}svg .yr{fill:var(--ink);font-size:13px;font-weight:600}
+svg .ln{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}svg .ln.a{stroke:var(--acc)}svg .ln.b{stroke:var(--acc2);stroke-dasharray:5 4}
+svg .pt{stroke:var(--surf);stroke-width:2}
+svg .s-ok{fill:var(--ok)}svg .s-hi,svg .s-flag{fill:var(--hi)}svg .s-lo{fill:var(--lo)}svg .s-na{fill:var(--mut)}
+svg .vl{fill:var(--ink);font-size:13px;font-weight:600}svg .hv{stroke:var(--mut);stroke-width:1;stroke-dasharray:3 3}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left;white-space:normal}
+th{font-weight:600;color:var(--mut);font-size:13px}
+td small,th small{display:block;font-weight:400;color:var(--mut);font-size:13px}
+.ctl{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:end;margin-bottom:14px}
+label{font-size:13px;color:var(--mut);display:grid;gap:4px}
+select,input,textarea{font:inherit;font-size:16px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;min-height:44px}
+button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.btn{font:inherit;font-size:15px;min-height:44px;padding:8px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+.btn.pr{background:var(--acc);color:var(--bg);border-color:var(--acc);font-weight:600}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:14px}
+.tab{flex:none;font:inherit;font-size:15px;min-height:44px;padding:8px 14px;border:0;border-bottom:3px solid transparent;background:none;color:var(--mut);cursor:pointer}
+.tab.on{color:var(--ink);border-color:var(--acc);font-weight:600}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,232px),1fr));gap:12px}
+.card{font:inherit;color:inherit;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;cursor:pointer;display:grid;gap:2px;--surf:var(--card)}
+.card.on{border-color:var(--acc);box-shadow:0 0 0 2px var(--acc) inset}
+.card .n{font-weight:600;font-size:15px}.card .t{font-size:13px;color:var(--mut)}
+.card .v{font-size:24px;font-weight:700;line-height:1.2;margin-top:4px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.card .v span.u{font-size:13px;font-weight:400;color:var(--mut)}
+.card .d{font-size:13px;color:var(--mut)}
+.mini{position:relative;height:64px;margin-top:6px}.mini svg{position:absolute;inset:0;width:100%;height:100%}
+.dots{display:flex;gap:6px;margin-top:10px}.dots i{width:14px;height:14px;border-radius:50%}
+.dots .s-ok{background:var(--ok)}.dots .s-hi,.dots .s-flag{background:var(--hi)}.dots .s-lo{background:var(--lo)}.dots .s-na{background:var(--line)}
+.scroll{overflow-x:auto}
+.note{font-size:13px;color:var(--mut);margin-top:14px}
+.panel{border:1px solid var(--line);border-radius:14px;padding:18px;margin-top:22px;display:none}
+.panel.on{display:block}
+.fgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,220px),1fr));gap:10px;margin:8px 0 16px}
+.err{color:var(--hi);font-size:14px}
+textarea{width:100%;min-height:90px;font-size:14px}
+@media(max-width:600px){table{font-size:13px}.det{padding:12px}}
+@media(prefers-reduced-motion:no-preference){.card{transition:border-color .15s,transform .15s}.card:hover{transform:translateY(-2px)}}
+</style>
+</head>
+<body>
+<header class="band top"><div class="wrap">
+  <div style="display:flex;justify-content:space-between;gap:12px;align-items:start"><h1 id="h1"></h1><button class="btn" id="lang" type="button" style="flex:none"></button></div>
+  <p class="sub" id="sub"></p>
+  <div class="chips" id="flags"></div>
+  <section class="det" id="det" aria-live="polite">
+    <div class="dh"><div><h2 id="dn"></h2><div class="meta" id="dm"></div></div><div id="dc"></div></div>
+    <div class="fig"><svg id="big" class="ch"></svg><div class="tip" id="tip"></div></div>
+    <div class="leg" id="leg"></div>
+    <div class="scroll" style="margin-top:10px"><table id="dt"></table></div>
+  </section>
+</div></header>
+
+<main class="band"><div class="wrap">
+  <div class="ctl">
+    <label><span data-t="viewYear"></span><select id="selA"></select></label>
+    <label><span data-t="cmpYear"></span><select id="selB"></select></label>
+    <button class="btn" id="vw" type="button"></button>
+    <button class="btn pr" id="add" type="button" data-t="addBtn"></button>
+  </div>
+  <nav class="tabs" id="tabs"></nav>
+  <div id="body"></div>
+  <p class="note" data-t="note"></p>
+
+  <section class="panel" id="panel">
+    <h2 data-t="addTitle"></h2>
+    <p class="meta" data-t="addHelp"></p>
+    <form id="fm">
+      <div class="fgrid">
+        <label><span data-t="fYear"></span><input name="_k" placeholder="2026" inputmode="numeric" required></label>
+        <label><span data-t="fDate"></span><input name="_d" type="date"></label>
+      </div>
+      <div id="fields"></div>
+      <div class="ctl"><button class="btn pr" type="submit" data-t="saveB"></button><button class="btn" type="button" id="cls" data-t="closeB"></button><span class="err" id="ferr"></span></div>
+    </form>
+    <div id="extras"></div>
+    </section>
+</div></main>
+
+<script>
+{
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+let L='en';try{L=localStorage.getItem('health-lang')||'en'}catch(e){}
+const TX={
+en:{title:'Health Checkup Book',viewYear:'View year',cmpYear:'Compare with',addBtn:'+ Add new year',tbl:'View as table',crd:'View as cards + charts',
+note:'Green band in charts = normal range from the lab report · Ranges marked “general” (vital signs) are not on the report; standard adult ranges are used instead · For tracking trends only — talk to a doctor about abnormal results.',
+addTitle:'Add a new year of results',addHelp:'Fill in only what you have; blanks are fine. Saved straight into your Google Sheet (a new year column).',openSheet:'Open the Google Sheet',
+fYear:'Year (AD)',fDate:'Test date',saveB:'Save',closeB:'Close',bkTitle:'Backup / import',cpB:'Copy backup',pasteL:'Paste a copied backup',impB:'Import',
+h1:(k,o,t)=>`Health ${k}: ${o} of ${t} normal`,watch:n=>`${n} to watch: `,allok:'Every test with a range is normal',tested:d=>` (tested ${d})`,nodata:c=>` · No data this year: ${c}`,
+range:'Normal',norange:'No range on report',gen:'general',outOf:(b,n)=>` · out of range ${b} of ${n} years`,yr:'Year',
+sys:'Systolic',dia:'Diastolic (dashed)',band:'Normal range',okL:'Normal',hiL:'High / abnormal',loL:'Low',
+testDate:'Test date',value:'Value',status:'Status',chg:'Change from previous',test:'Test',
+same:y=>`Same as ${y}`,nod:y=>`${y}: no data`,vs:y=>`vs ${y}`,better:' · better',worse:' · worse',
+eg:'e.g. 115/75',added:'Years you added: ',del:'Delete a year',sure:'Confirm delete ',
+e1:'Enter a 4-digit year, e.g. 2026',e2:'This year already exists — edit it in the Google Sheet',e3:'Fill in at least 1 test',
+copied:'Copied',cpFail:'Could not copy — the data is in the box below, copy it manually',imported:n=>`Imported ${n} year(s)`,badImp:'Invalid data format',
+st:{ok:'✓ Normal',hi:'▲ High',lo:'▼ Low',flag:'! Abnormal',na:'—'}},
+th:{title:'สมุดผลตรวจสุขภาพ',viewYear:'ดูผลปี',cmpYear:'เทียบกับปี',addBtn:'+ เพิ่มผลตรวจปีใหม่',tbl:'ดูเป็นตาราง',crd:'ดูเป็นการ์ด + กราฟ',
+note:'แถบสีเขียวในกราฟ = ช่วงค่าปกติตามใบผลตรวจ · ค่าที่ติดป้าย “ค่าทั่วไป” (สัญญาณชีพ) ไม่มีในใบผล ใช้เกณฑ์ผู้ใหญ่ทั่วไปแทน · ใช้ดูแนวโน้มเท่านั้น ถ้ามีค่าผิดปกติควรปรึกษาแพทย์',
+addTitle:'เพิ่มผลตรวจปีใหม่',addHelp:'กรอกเฉพาะรายการที่มี เว้นว่างได้ ข้อมูลจะบันทึกลง Google Sheet (เพิ่มเป็นคอลัมน์ปีใหม่)',openSheet:'เปิด Google Sheet',
+fYear:'ปี (ค.ศ.)',fDate:'วันที่ตรวจ',saveB:'บันทึก',closeB:'ปิด',bkTitle:'สำรอง / นำเข้า',cpB:'คัดลอกข้อมูลสำรอง',pasteL:'วางข้อมูลสำรองที่คัดลอกไว้',impB:'นำเข้า',
+h1:(k,o,t)=>`สุขภาพปี ${k}: ปกติ ${o} จาก ${t} รายการ`,watch:n=>`ต้องดู ${n} รายการ: `,allok:'ทุกรายการที่มีเกณฑ์อยู่ในช่วงปกติ',tested:d=>` (ตรวจ ${d})`,nodata:c=>` · ปีนี้ไม่มีข้อมูล${c}`,
+range:'ปกติ',norange:'ไม่มีเกณฑ์ในใบผล',gen:'ค่าทั่วไป',outOf:(b,n)=>` · ผิดเกณฑ์ ${b} จาก ${n} ปี`,yr:'ปี',
+sys:'ตัวบน',dia:'ตัวล่าง (เส้นประ)',band:'ช่วงปกติ',okL:'ปกติ',hiL:'สูง/ผิดปกติ',loL:'ต่ำ',
+testDate:'ปีที่ตรวจ',value:'ค่า',status:'สถานะ',chg:'เปลี่ยนจากครั้งก่อน',test:'รายการ',
+same:y=>`เท่ากับปี ${y}`,nod:y=>`ปี ${y}: ไม่มีข้อมูล`,vs:y=>`จากปี ${y}`,better:' · ดีขึ้น',worse:' · แย่ลง',
+eg:'เช่น 115/75',added:'ปีที่เพิ่มเอง: ',del:'ลบปี',sure:'ยืนยันลบปี ',
+e1:'ใส่ปีเป็นตัวเลข 4 หลัก เช่น 2026',e2:'ปีนี้มีอยู่แล้ว — แก้ไขได้ใน Google Sheet',e3:'กรอกอย่างน้อย 1 รายการ',
+copied:'คัดลอกแล้ว',cpFail:'คัดลอกไม่ได้ — ข้อมูลอยู่ในช่องด้านล่าง ให้คัดลอกเอง',imported:n=>`นำเข้า ${n} ปีแล้ว`,badImp:'รูปแบบข้อมูลไม่ถูกต้อง',
+st:{ok:'✓ ปกติ',hi:'▲ สูง',lo:'▼ ต่ำ',flag:'! ผิดปกติ',na:'—'}}};
+const T=k=>TX[L][k];
+const EN={wt:'Body weight',ht:'Height',bmi:'Body mass index',waist:'Waist circumference',bp:'Blood pressure',pulse:'Heart rate',rr:'Breathing rate',temp:'Body temperature',
+hb:'Hemoglobin',hct:'Hematocrit',rbc:'Red blood cell count',mcv:'Red cell size',mch:'Hemoglobin per cell',mchc:'Hemoglobin concentration in cells',rdw:'Red cell size variation',wbc:'White blood cell count',neu:'Neutrophils',lym:'Lymphocytes',mono:'Monocytes',eos:'Eosinophils',baso:'Basophils',atyp:'Atypical lymphocytes',plt:'Platelets',mpv:'Platelet size',
+glu:'Fasting blood sugar',chol:'Total cholesterol',ldl:'“Bad” cholesterol (LDL)',hdl:'“Good” cholesterol (HDL)',tg:'Triglycerides',uric:'Uric acid',bun:'Blood urea nitrogen (kidney)',cr:'Creatinine (kidney function)',egfr:'Kidney filtration rate',ast:'Liver enzyme AST',alt:'Liver enzyme ALT',alp:'ALP enzyme (liver/bone)',ca:'Calcium',
+ucol:'Urine color',utr:'Clarity',usg:'Specific gravity',uph:'Acidity (pH)',uleu:'White cells (dipstick)',unit:'Nitrite',upro:'Protein',uglu:'Sugar',uket:'Ketones',uubg:'Urobilinogen',ubil:'Bilirubin',uery:'Red cells (dipstick)',uwbc:'White cells (microscope)',urbc:'Red cells (microscope)',uepi:'Epithelial cells',ubac:'Bacteria',
+hbsv:'Hepatitis B antibody level',hbsab:'Hepatitis B immunity',hbsval:'HBs antigen level',hbsag:'Hepatitis B infection'};
+const CATEN={chem:'Blood chemistry',cbc:'Blood count (CBC)',vital:'Vital signs',urine:'Urine',immu:'Hepatitis B immunity'};
+const LBLEN={hbsv:{lo:'Below protective',ok:'Immune'},hbsab:{lo:'Not immune',ok:'Immune'},hbsag:{ok:'Not detected'}};
+const DEN={'2021':'30 Jun 2021','2022':'13 Dec 2022','2023':'21 Dec 2023','2024':'27 Dec 2024','2025':'30 Oct 2025'};
+const desc=p=>L==='en'?EN[p.id]:p.th, unit=p=>L==='en'&&p.u==='ครั้ง/นาที'?'breaths/min':p.u;
+const CATS=[{id:'chem',t:'เคมีในเลือด'},{id:'cbc',t:'เม็ดเลือด (CBC)'},{id:'vital',t:'สัญญาณชีพ'},{id:'urine',t:'ปัสสาวะ'},{id:'immu',t:'ภูมิคุ้มกันตับอักเสบบี'}];
+function parseR(s){if(!s)return null;s=s.replace(/[–—]/g,'-');let m=s.match(/(\d+\.?\d*)\s*-\s*(\d+\.?\d*)/);if(m)return{lo:+m[1],hi:+m[2]};
+ m=s.match(/<\s*(\d+\.?\d*)/);if(m)return{hi:+m[1],hs:1};m=s.match(/≥\s*(\d+\.?\d*)/);if(m)return{lo:+m[1]};m=s.match(/>\s*(\d+\.?\d*)/);if(m)return{lo:+m[1],ls:1};return null}
+let P={},ORDER=[],YRS=[],SHEET_URL='';
+const LBLTH={hbsv:{lo:'ต่ำกว่าระดับป้องกัน',ok:'มีภูมิ'},hbsab:{lo:'ไม่มีภูมิ',ok:'มีภูมิ'},hbsag:{ok:'ไม่พบเชื้อ'}},BAD={hbsab:'lo'};
+const KIND={num:'n',bp:'bp',qual:'q',text:'t'};
+const num=v=>{if(typeof v==='number')return v;if(v==null||v==='')return NaN;const m=String(v).match(/\d+\.?\d*/g);return m?Math.max(...m.map(Number)):NaN};
+function st(p,v){if(v==null||v==='')return 'na';
+ if(p.k==='q'){if(!p.ok)return 'na';return p.ok.includes(v)?'ok':(p.bad||'flag')}
+ if(p.k==='bp'){const a=String(v).split('/').map(Number);if(a.length<2||a.some(isNaN))return 'na';if(a[0]>=120||a[1]>=80)return 'hi';if(a[0]<90||a[1]<60)return 'lo';return 'ok'}
+ const x=num(v),r=p.r;if(!r||isNaN(x))return 'na';
+ if(r.lo!=null&&(r.ls?x<=r.lo:x<r.lo))return 'lo';if(r.hi!=null&&(r.hs?x>=r.hi:x>r.hi))return 'hi';return 'ok'}
+const chip=(p,s)=>{const lb=L==='en'?LBLEN[p.id]:p.lbl;return `<span class="chip c-${s}">${s==='na'?'—':(lb&&lb[s]?(s==='ok'?'✓ ':s==='hi'?'▲ ':'▼ ')+lb[s]:T('st')[s])}</span>`};
+const dist=(p,v)=>{const x=num(v),r=p.r;if(!r||isNaN(x))return null;return r.lo!=null&&x<r.lo?r.lo-x:r.hi!=null&&x>r.hi?x-r.hi:0};
+const rd=n=>Math.round(n*100)/100;
+const show=(p,v)=>v==null||v===''?'—':esc(v);
+function boot(data){const r=data.results||[],h=r[0]||[];SHEET_URL=data.url||'';
+ const yc=[];h.forEach((c,i)=>{if(/^\d{4}$/.test(String(c).trim()))yc.push([String(c).trim(),i])});
+ const ym={};(data.years||[]).slice(1).forEach(y=>{const k=String(y[0]).trim();if(/^\d{4}$/.test(k))ym[k]={k,d:y[1]||y[2]||k,den:y[2]||y[1]||k}});
+ YRS=yc.map(([k])=>ym[k]||{k,d:k,den:k}).sort((a,b)=>a.k.localeCompare(b.k));
+ P={};ORDER=[];r.slice(1).forEach(row=>{const id=String(row[0]||'').trim();if(!id||P[id])return;const k=KIND[String(row[6]).trim()]||'n';
+  const ok=String(row[7]||'').split('|').map(s=>s.trim()).filter(Boolean);const v={};
+  yc.forEach(([yk,i])=>{let x=row[i];if(x==null||String(x).trim()==='')return;x=String(x).trim();v[yk]=k==='n'&&!isNaN(+x.replace(/,/g,''))?+x.replace(/,/g,''):x});
+  if(!CATS.some(c=>c.id===row[1]))CATS.push({id:String(row[1]),t:String(row[1])});
+  P[id]={c:String(row[1]),id,n:String(row[2]||id),th:String(row[3]||row[2]||id),u:String(row[4]||''),ref:String(row[5]||''),k,ok:ok.length?ok:null,g:/^(yes|y|true|1)$/i.test(String(row[8]).trim()),
+   lbl:LBLTH[id],bad:BAD[id],r:k==='bp'||k==='q'?null:parseR(String(row[5]||'')),v};ORDER.push(id)});
+ if(!YRS.length||!ORDER.length){$('#h1').textContent=L==='en'?'No data in the sheet yet':'ยังไม่มีข้อมูลในชีต';return false}
+ if(!YRS.some(y=>y.k===S.A))S.A=YRS[YRS.length-1].k;if(!YRS.some(y=>y.k===S.B))S.B=(YRS[YRS.length-2]||YRS[0]).k;return true}
+const S={A:'',B:'',cat:'chem',view:'cards',sel:null};
+const ydd=y=>L==='en'?y.den:y.d;const yd=k=>{const y=YRS.find(y=>y.k===k);return y?ydd(y):''};
+const ro=new ResizeObserver(es=>es.forEach(e=>draw(e.target)));
+
+function draw(s){const p=P[s.dataset.id];if(!p)return;const mini=s.classList.contains('m');const W=s.clientWidth,H=s.clientHeight;if(!W||!H)return;
+ const n=YRS.length,nar=W<520;const pd=mini?{l:6,r:6,t:8,b:8}:{l:nar?38:50,r:nar?16:28,t:26,b:nar?30:48};
+ let ser;if(p.k==='bp'){const sp=YRS.map(y=>{const v=p.v[y.k];const a=v?String(v).split('/').map(Number):null;return a&&a.length===2&&!a.some(isNaN)?a:null});
+  ser=[{nm:'ตัวบน',vals:sp.map(a=>a&&a[0]),r:{lo:90,hi:120},c:'a'},{nm:'ตัวล่าง',vals:sp.map(a=>a&&a[1]),r:{lo:60,hi:80},c:'b'}]}
+ else ser=[{vals:YRS.map(y=>{const x=num(p.v[y.k]);return isNaN(x)?null:x}),r:p.r,c:'a'}];
+ const all=[];ser.forEach(o=>{o.vals.forEach(v=>v!=null&&all.push(v));if(o.r){if(o.r.lo!=null)all.push(o.r.lo);if(o.r.hi!=null)all.push(o.r.hi)}});
+ if(!ser.some(o=>o.vals.some(v=>v!=null))){s.innerHTML='';s._g=null;return}
+ let mn=Math.min(...all),mx=Math.max(...all);if(mn===mx){mn-=1;mx+=1}const pr=(mx-mn)*.12,floor=Math.min(...all)>=0;mn-=pr;mx+=pr;if(floor&&mn<0)mn=0;
+ const iw=W-pd.l-pd.r,ih=H-pd.t-pd.b;const X=i=>pd.l+(n===1?iw/2:i*iw/(n-1)),Yp=v=>pd.t+ih-(v-mn)/(mx-mn)*ih;
+ let g='';
+ ser.forEach(o=>{if(!o.r)return;const t=Yp(Math.min(o.r.hi??mx,mx)),b=Yp(Math.max(o.r.lo??mn,mn));if(b>t)g+=`<rect class="bd" x="${pd.l-4}" y="${t}" width="${iw+8}" height="${b-t}" rx="3"/>`});
+ if(!mini){for(let t=0;t<=4;t++){const v=mn+(mx-mn)*t/4,y=Yp(v);g+=`<line class="gl" x1="${pd.l}" x2="${W-pd.r}" y1="${y}" y2="${y}"/><text class="ax" x="${pd.l-8}" y="${y+4}" text-anchor="end">${mx-mn>=20?Math.round(v):mx-mn>=2?v.toFixed(1):rd(v)}</text>`}
+  YRS.forEach((y,i)=>{const an=n>1&&i===0?'start':n>1&&i===n-1?'end':'middle',xx=X(i)+(an==='start'?-6:an==='end'?6:0);g+=`<text class="yr" x="${xx}" y="${H-pd.b+20}" text-anchor="${an}">${esc(y.k)}</text>`;if(!nar)g+=`<text class="ax" x="${xx}" y="${H-pd.b+36}" text-anchor="${an}">${esc(ydd(y))}</text>`});
+  g+=`<line class="hv" id="hv" y1="${pd.t}" y2="${H-pd.b}" x1="-9" x2="-9"/>`}
+ ser.forEach(o=>{let d;const pts=o.vals.map((v,i)=>v==null?null:[X(i),Yp(v)]).filter(Boolean);d=pts.map((q,i)=>(i?'L':'M')+q[0].toFixed(1)+' '+q[1].toFixed(1)).join('');
+  g+=`<path class="ln ${o.c}" d="${d}"/>`});
+ ser.forEach((o,si)=>{o.vals.forEach((v,i)=>{if(v==null)return;const s2=st(p,p.v[YRS[i].k]);g+=`<circle class="pt s-${s2}" cx="${X(i)}" cy="${Yp(v)}" r="${mini?3.5:5.5}"/>`});
+  if(!mini){const idx=o.vals.map((v,i)=>v==null?-1:i).filter(i=>i>=0);[...new Set([idx[0],idx[idx.length-1]])].forEach(i=>{const a=i===0?'start':i===n-1?'end':'middle';const dx=i===0?-4:i===n-1?4:0;
+   g+=`<text class="vl" x="${X(i)+dx}" y="${Yp(o.vals[i])+(si?20:-11)}" text-anchor="${a}">${rd(o.vals[i])}</text>`})}});
+ s.innerHTML=g;s._g={X,n}}
+
+function hover(e){const s=$('#big'),g=s._g,tip=$('#tip');if(!g){tip.style.display='none';return}const r=s.getBoundingClientRect(),x=e.clientX-r.left;
+ let bi=0,bd=1e9;for(let i=0;i<g.n;i++){const d=Math.abs(g.X(i)-x);if(d<bd){bd=d;bi=i}}
+ const p=P[S.sel],y=YRS[bi],v=p.v[y.k];const hv=$('#hv');if(hv){hv.setAttribute('x1',g.X(bi));hv.setAttribute('x2',g.X(bi))}
+ tip.innerHTML=`<b>${esc(y.k)}</b> · ${esc(ydd(y))}<br>${show(p,v)} ${esc(unit(p))}`;tip.style.display='block';tip.style.left=Math.min(Math.max(g.X(bi),70),r.width-70)+'px'}
+
+function flagged(k){return ORDER.filter(id=>{const s=st(P[id],P[id].v[k]);return s!=='ok'&&s!=='na'})}
+function head(){const k=S.A;let ok=0,tot=0;ORDER.forEach(id=>{const s=st(P[id],P[id].v[k]);if(s!=='na'){tot++;if(s==='ok')ok++}});
+ const f=flagged(k);$('#h1').textContent=T('h1')(k,ok,tot);
+ const miss=CATS.filter(c=>ORDER.filter(id=>P[id].c===c.id).every(id=>P[id].v[k]==null)).map(c=>L==='en'?CATEN[c.id]:c.t);
+ $('#sub').textContent=(f.length?T('watch')(f.length)+f.map(id=>desc(P[id])).join(' · '):T('allok'))+T('tested')(yd(k))+(miss.length?T('nodata')(miss.join(', ')):'');
+ $('#flags').innerHTML=f.map(id=>{const p=P[id];return `<button class="fl" type="button" data-id="${id}"><b>${esc(p.n)}</b> ${show(p,p.v[k])} ${chip(p,st(p,p.v[k]))}</button>`}).join('');
+ if(!S.sel||!P[S.sel])S.sel=f.includes('ldl')?'ldl':(f[0]||'chol')}
+
+function detail(){const p=P[S.sel];const chartable=p.k==='n'||p.k==='bp';
+ $('#dn').textContent=`${desc(p)} · ${p.n}`;
+ const yrs=YRS.filter(y=>p.v[y.k]!=null),bad=yrs.filter(y=>{const s=st(p,p.v[y.k]);return s!=='ok'&&s!=='na'}).length;
+ $('#dm').textContent=(p.ref?`${T('range')} ${p.ref}${p.u?' '+unit(p):''}${p.g?' ('+T('gen')+')':''}`:T('norange'))+(p.ref&&yrs.length?T('outOf')(bad,yrs.length):'');
+ $('#dc').innerHTML=p.v[S.A]!=null?`<span class="meta">${T('yr')} ${esc(S.A)}</span> <b style="font-size:22px">${show(p,p.v[S.A])}</b> <span class="meta">${esc(unit(p))}</span> ${chip(p,st(p,p.v[S.A]))}`:'';
+ const fig=$('.fig');fig.style.display=chartable?'':'none';$('#leg').style.display=chartable?'':'none';
+ const big=$('#big');big.dataset.id=p.id;$('#tip').style.display='none';
+ $('#leg').innerHTML=(p.k==='bp'?`<span><i style="background:var(--acc)"></i>${T('sys')}</span><span><i style="background:var(--acc2)"></i>${T('dia')}</span>`:'')+(p.r||p.k==='bp'?`<span><i style="background:var(--band)"></i>${T('band')}</span>`:'')+`<span><i style="background:var(--ok)"></i>${T('okL')}</span><span><i style="background:var(--hi)"></i>${T('hiL')}</span><span><i style="background:var(--lo)"></i>${T('loL')}</span>`;
+ let prev=null;const cells=YRS.map(y=>{const v=p.v[y.k];let ch='';if(v!=null&&prev!=null&&p.k!=='q'){const d=num(v)-num(prev);if(!isNaN(d)&&p.k!=='bp')ch=(d>0?'+':'')+rd(d)}if(v!=null)prev=v;return{y,v,ch}});
+ $('#dt').innerHTML=`<tr><th>${T('testDate')}</th>${cells.map(c=>`<th>${esc(c.y.k)}<small>${esc(ydd(c.y))}</small></th>`).join('')}</tr>
+ <tr><td>${T('value')}${p.u?' ('+esc(unit(p))+')':''}</td>${cells.map(c=>`<td><b>${show(p,c.v)}</b></td>`).join('')}</tr>
+ <tr><td>${T('status')}</td>${cells.map(c=>`<td>${chip(p,st(p,c.v))}</td>`).join('')}</tr>
+ ${p.k==='n'||p.k==='t'?`<tr><td>${T('chg')}</td>${cells.map(c=>`<td>${c.ch||'—'}</td>`).join('')}</tr>`:''}`;
+ document.querySelectorAll('.card,.fl').forEach(b=>b.classList.toggle('on',b.dataset.id===S.sel))}
+
+function cmpLine(p){const a=p.v[S.A],b=p.v[S.B];if(a==null||b==null)return b==null?T('nod')(esc(S.B)):'';
+ if(p.k==='q'||p.k==='bp')return String(a)===String(b)?T('same')(esc(S.B)):`${esc(S.B)}: ${esc(b)}`;
+ const d=num(a)-num(b);if(isNaN(d))return '';if(rd(d)===0)return T('same')(esc(S.B));
+ const da=dist(p,a),db=dist(p,b);const w=da==null||db==null||da===db?'':da<db?T('better'):T('worse');
+ return `${d>0?'▲':'▼'} ${Math.abs(rd(d))} ${T('vs')(esc(S.B))}${w}`}
+
+function body(){const ids=ORDER.filter(id=>P[id].c===S.cat);ro.disconnect();
+ if(S.view==='table'){$('#body').innerHTML=`<div class="scroll"><table><tr><th>${T('test')}</th><th>${T('range')}</th>${YRS.map(y=>`<th>${esc(y.k)}</th>`).join('')}</tr>${ids.map(id=>{const p=P[id];
+  return `<tr class="rw" data-id="${id}" style="cursor:pointer"><td><b>${esc(p.n)}</b><small>${esc(desc(p))}</small></td><td>${esc(p.ref||'—')}${p.g?`<small>${T('gen')}</small>`:''}</td>${YRS.map(y=>{const v=p.v[y.k],s=st(p,v);return `<td>${show(p,v)}${v!=null&&s!=='na'?`<small>${chip(p,s)}</small>`:''}</td>`}).join('')}</tr>`}).join('')}</table></div>`}
+ else{$('#body').innerHTML=`<div class="grid">${ids.map(id=>{const p=P[id],v=p.v[S.A],s=st(p,v);const ch=p.k==='n'||p.k==='bp';
+  return `<button class="card" type="button" data-id="${id}"><span class="n">${esc(p.n)}</span><span class="t">${esc(desc(p))}</span>
+  <span class="v">${show(p,v)} <span class="u">${esc(unit(p))}</span> ${v!=null?chip(p,s):''}</span><span class="d">${p.ref?T('range')+' '+esc(p.ref):T('norange')}${p.g?' ('+T('gen')+')':''}</span><span class="d">${cmpLine(p)}</span>
+  ${ch?`<span class="mini"><svg class="ch m" data-id="${id}" aria-hidden="true"></svg></span>`:`<span class="dots">${YRS.map(y=>`<i class="s-${st(p,p.v[y.k])}" title="${esc(y.k)}"></i>`).join('')}</span>`}</button>`}).join('')}</div>`}
+ document.querySelectorAll('svg.ch').forEach(s=>ro.observe(s));detail()}
+
+function ctl(){const o=YRS.map(y=>`<option value="${esc(y.k)}">${esc(y.k)} (${esc(ydd(y))})</option>`).join('');$('#selA').innerHTML=o;$('#selB').innerHTML=o;$('#selA').value=S.A;$('#selB').value=S.B;
+ $('#tabs').innerHTML=CATS.map(c=>{const n=ORDER.filter(id=>P[id].c===c.id&&flagged(S.A).includes(id)).length;return `<button class="tab${c.id===S.cat?' on':''}" type="button" data-c="${c.id}">${L==='en'?CATEN[c.id]:c.t}${n?` <span class="chip c-hi">${n}</span>`:''}</button>`}).join('');
+ $('#vw').textContent=S.view==='table'?T('crd'):T('tbl')}
+function statics(){document.documentElement.lang=L;document.title=T('title');document.querySelectorAll('[data-t]').forEach(e=>e.textContent=T(e.dataset.t));$('#lang').textContent=L==='en'?'ภาษาไทย':'English';if($('#panel').classList.contains('on')){fields();extras()}}
+function all(){statics();head();ctl();body()}
+
+function pick(id){if(!P[id])return;S.sel=id;detail();draw($('#big'));$('#det').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'})}
+document.addEventListener('click',e=>{const t=e.target.closest('.card,.fl,.rw');if(t){pick(t.dataset.id);return}
+ const c=e.target.closest('.tab');if(c){S.cat=c.dataset.c;ctl();body()}});
+$('#selA').onchange=e=>{S.A=e.target.value;all();draw($('#big'))};$('#selB').onchange=e=>{S.B=e.target.value;body()};
+$('#lang').onclick=()=>{L=L==='en'?'th':'en';try{localStorage.setItem('health-lang',L)}catch(e){}all();draw(big)};
+$('#vw').onclick=()=>{S.view=S.view==='table'?'cards':'table';ctl();body()};
+const big=$('#big');big.addEventListener('pointermove',hover);big.addEventListener('pointerdown',hover);big.addEventListener('pointerleave',()=>{$('#tip').style.display='none';const h=$('#hv');if(h){h.setAttribute('x1',-9);h.setAttribute('x2',-9)}});
+new ResizeObserver(()=>draw(big)).observe(big);
+
+// add / delete year -> Google Sheet
+const MTH=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'],MEN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function fields(){$('#fields').innerHTML=CATS.map(c=>`<h3 style="font-size:16px;margin:12px 0 0">${L==='en'?(CATEN[c.id]||c.t):c.t}</h3><div class="fgrid">${ORDER.filter(id=>P[id].c===c.id).map(id=>{const p=P[id];
+ const ph=p.k==='bp'?T('eg'):p.k==='q'?(p.ok?p.ok[0]:''):p.ref;return `<label>${esc(p.n)}${p.u?' ('+esc(unit(p))+')':''}<input name="${esc(id)}" placeholder="${esc(ph)}"></label>`}).join('')}</div>`).join('')}
+function extras(){$('#extras').innerHTML=`<p class="meta">${T('del')}: ${YRS.map(y=>`<button class="btn" type="button" data-del="${esc(y.k)}">${esc(y.k)}</button>`).join(' ')}</p>`+(SHEET_URL?`<p><a href="${esc(SHEET_URL)}" target="_blank" rel="noopener">${T('openSheet')}</a></p>`:'')}
+function busy(on){document.body.style.cursor=on?'progress':'';document.querySelectorAll('#fm button,#extras button').forEach(b=>b.disabled=on)}
+function fail(e){busy(false);$('#ferr').textContent=(L==='en'?'Error: ':'ผิดพลาด: ')+(e&&e.message||e)}
+function done(data){busy(false);boot(data);extras();all();draw(big)}
+$('#add').onclick=()=>{const pn=$('#panel');pn.classList.add('on');fields();extras();pn.scrollIntoView({block:'start'});pn.querySelector('input').focus()};
+$('#cls').onclick=()=>$('#panel').classList.remove('on');
+$('#fm').onsubmit=e=>{e.preventDefault();const f=new FormData(e.target);const k=String(f.get('_k')||'').trim();
+ if(!/^\d{4}$/.test(k)){$('#ferr').textContent=T('e1');return}
+ if(YRS.some(y=>y.k===k)){$('#ferr').textContent=T('e2');return}
+ const v={};ORDER.forEach(id=>{let x=String(f.get(id)||'').trim();if(x==='')return;v[id]=/^-?\d+(\.\d+)?$/.test(x)&&P[id].k==='n'?+x:x});
+ if(!Object.keys(v).length){$('#ferr').textContent=T('e3');return}
+ const dv=String(f.get('_d')||'');let dth=k,den=k;if(/^\d{4}-\d{2}-\d{2}$/.test(dv)){const [Y,M,D]=dv.split('-').map(Number);dth=`${D} ${MTH[M-1]} ${String(Y+543).slice(2)}`;den=`${D} ${MEN[M-1]} ${Y}`}
+ $('#ferr').textContent=L==='en'?'Saving…':'กำลังบันทึก…';busy(true);
+ google.script.run.withSuccessHandler(data=>{$('#ferr').textContent='';e.target.reset();$('#panel').classList.remove('on');S.A=k;done(data);window.scrollTo({top:0})}).withFailureHandler(fail).addYear({k,dth,den,v})};
+$('#extras').addEventListener('click',e=>{const b=e.target.closest('[data-del]');if(!b)return;const k=b.dataset.del;
+ if(b.dataset.sure!=='1'){b.dataset.sure='1';b.textContent=T('sure')+k;return}
+ busy(true);google.script.run.withSuccessHandler(done).withFailureHandler(fail).deleteYear(k)});
+function load(){statics();$('#h1').textContent=L==='en'?'Loading from Google Sheet…':'กำลังโหลดข้อมูลจาก Google Sheet…';
+ google.script.run.withSuccessHandler(data=>{if(boot(data)){all();draw(big)}}).withFailureHandler(e=>{$('#h1').textContent=(L==='en'?'Could not load: ':'โหลดไม่ได้: ')+(e&&e.message||e)}).getData()}
+load();
+}
+</script>
+</body>
+</html>
